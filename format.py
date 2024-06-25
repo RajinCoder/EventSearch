@@ -14,6 +14,8 @@ def format_time(time):
     return f"{hour}:{minute} {AM_PM}"
 
 def format_link(uri, label=None):
+    if uri is None:
+        return label
     if label is None: 
         label = uri
     parameters = ''
