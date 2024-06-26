@@ -31,41 +31,41 @@ def parse_events(results):
 API_KEY =  'zcOH2dg6AXZoijhU5NUD4ZlvGdA6cMtG'
 url = 'https://app.ticketmaster.com/discovery/v2/events.json'
 
+def main():
+    # Loop till ended by User
+    programOver = False
 
-# Loop till ended by User
+    while not programOver:
+        # User Inputs: Postal Code, Radius, City
+        search_query = input("Enter preferred choice of search and the corresponding text following: E for event name, P for postal code, C for city, and Q to quit: ")
 
-programOver = False
+        if search_query[0] == "C" or search_query[0] == "P":
+            radius = input("Enter the furthest you're willing to travel: ")
 
-while not programOver:
-    # User Inputs: Postal Code, Radius, City
-    search_query = input("Enter preferred choice of search and the corresponding text following: E for event name, P for postal code, C for city, and Q to quit: ")
-    if search_query[0] == "C" or search_query[0] == "P":
-        radius = input("Enter the furthest you're willing to travel: ")
+        #API Parameters
+        match search_query[0]:
+            case "E":
+                params = {'apikey': API_KEY, 'keyword': search_query[1:].strip()}
+                
+            case "P":
+                params = {'apikey': API_KEY, 'radius': radius, 'postalCode': search_query[1:].strip()}
+                
+            case "C":
+                params = {'apikey': API_KEY, 'radius': radius, 'city': search_query[1:].strip()}
+            case "Q":
+                programOver = True
+                break
+            case _:
+                print("Incorrect format. Try Again")
+                continue
 
-    #API Parameters
-    match search_query[0]:
-        case "E":
-            params = {'apikey': API_KEY, 'keyword': search_query[1:].strip()}
-            
-        case "P":
-            params = {'apikey': API_KEY, 'radius': radius, 'postalCode': search_query[1:].strip()}
-            
-        case "C":
-            params = {'apikey': API_KEY, 'radius': radius, 'city': search_query[1:].strip()}
-            
-        case "Q":
-            programOver = True
-            break
-        case _:
-            print("Incorrect format. Try Again")
-
-
-    # Make the request
-    response = requests.get(url, params=params)
-
-
-    search_results = response.json()
-    parse_events(search_results)
+        # Make the request
+        response = requests.get(url, params=params)
 
 
+        search_results = response.json()
+        parse_events(search_results)
+
+if __name__ == '__main__':
+    main()
 
