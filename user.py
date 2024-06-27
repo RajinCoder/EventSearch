@@ -1,6 +1,8 @@
 import sqlite3
 import secrets
 import random
+import hashlib
+from pwinput import pwinput
 from events import display_user_options
 
 conn = sqlite3.connect('events.db')
@@ -13,32 +15,39 @@ def get_user_credentials():
     match option:
         case "L":
             username = input("Enter your username: ")
-            password = input("Enter your password: ")
+            password = pwinput("Enter your password: ")
+            if not get_user_id(username, password):
+                print("The username or password you have entered doesn't match our records")
             return get_user_id(username, password)
         case "S":
             username = input("Enter your username: ")
-            password = input("Enter your password: ")
-            confirm_password = input("Enter your password again: ")
+            password = pwinput("Enter your password: ")
+            confirm_password = pwinput("Enter your password again: ")
             while password != confirm_password:
                 print("The passwords didn't match")
-                password = input("Enter your password: ")
-                confirm_password = input("Enter your password again: ")
+                password = pwinput("Enter your password: ")
+                confirm_password = pwinput("Enter your password again: ")
+            if not add_user(username, password):
+                print("An account with that username already exists")
             return add_user(username, password)
         case "Q":
-            return "Q"
+            exit()
         case _:
             get_user_credentials()
 
 def get_user_id(username, password):
     try:
-        cursor.execute(f"SELECT id FROM user WHERE username = '{username}' AND password = '{password}'")
+        cursor.execute(f"SELECT id FROM user WHERE username = '{username}' AND password = '{hashlib.sha256(password.encode('utf-8')).hexdigest()}'")
         return cursor.fetchall()[0][0]
     except:
         return None
     
 def add_user(username, password):
+    cursor.execute(f"SELECT id FROM user WHERE username = '{username}'")
+    if len(cursor.fetchall()) > 0:
+        return None
     id = create_id()
-    cursor.execute(f"INSERT INTO user (id, username, password) VALUES ({id},'{username}', '{password}')")
+    cursor.execute(f"INSERT INTO user (id, username, password) VALUES ({id},'{username}', '{hashlib.sha256(password.encode('utf-8')).hexdigest()}')")
     conn.commit()
     return id
 
@@ -61,10 +70,7 @@ def get_user_by_id(id):
 def initialize_ui():
     user_id = get_user_credentials()
     while not user_id:
-        print("The username or password you have entered doesn't match our records")
         user_id = get_user_credentials()
-    if user_id == "Q":
-        return
     print(f"Welcome @{get_user_by_id(user_id)}!")
     display_user_options(get_user_by_id(user_id), user_id)
 
