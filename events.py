@@ -1,10 +1,14 @@
 import requests
+import sqlite3
+import os
+from dotenv import load_dotenv
 from format import format_link
 from format import format_date
 from format import format_time
 from format import format_price_range
 from format import get
-import sqlite3
+
+load_dotenv()
 
 conn = sqlite3.connect('events.db')
 cursor = conn.cursor()
@@ -47,8 +51,8 @@ def parse_events(results):
 # 'classifications', 'promoter', 'promoters', 'priceRanges', 'seatmap', 'accessibility', 'ticketLimit',
 # 'ageRestrictions', 'ticketing', '_links', '_embedded'])
 
-API_KEY =  'zcOH2dg6AXZoijhU5NUD4ZlvGdA6cMtG'
-url = 'https://app.ticketmaster.com/discovery/v2/events.json'
+API_KEY =  os.getenv('API_KEY')
+url = os.getenv('API_URL')
 
 def perform_search(username, user_id):
     # Loop till ended by User
@@ -74,8 +78,7 @@ def perform_search(username, user_id):
             case "B":
                 return
             case "Q":
-                programOver = True
-                break
+                exit()      
             case _:
                 print("Incorrect format. Try Again")
                 continue
@@ -97,17 +100,16 @@ def perform_search(username, user_id):
             case "B":
                 return
             case "Q":
-                programOver = True
-                break
+                exit()
             case _:
                 print("Incorrect format. Try Again")
                 continue 
 
 def add_favorite(user_id, event):
-    # cursor.execute(f'SELECT * FROM event_favorites WHERE user_id = ${user_id} AND event_id = \'{event["event_id"]}\'')
-    # if len(cursor.fetchall()) > 0:
-    #     print("Already added to favorites")
-    #     return
+    cursor.execute(f"SELECT * FROM event_favorites WHERE user_id = {user_id} AND event_id = '{event['event_id']}'") # Fixed
+    if len(cursor.fetchall()) > 0:
+        print("Already added to favorites")
+        return
     cursor.execute(f'INSERT INTO event_favorites (user_id, event_id) VALUES ({user_id}, \'{event["event_id"]}\')')
     conn.commit()
     cursor.execute(f'SELECT * FROM event WHERE event_id = \'{event["event_id"]}\'')
@@ -150,7 +152,7 @@ def display_favorites(username, user_id):
         case "B":
             return
         case _:
-            return
+            exit()
 
 def display_user_options(username, user_id):
     programOver = False
@@ -164,8 +166,7 @@ def display_user_options(username, user_id):
             case "F":
                 display_favorites(username, user_id)
             case "Q":
-                programOver = True
-                break
+                exit()
             case _:
                 print("Incorrect format. Try Again")
                 continue
