@@ -6,7 +6,7 @@ def format_date(date):
     return f"{months[int(month) - 1]} {day}, {year}"
 
 def format_time(time):
-    if not time:
+    if not time or time == "TBA":
         return "TBA"
     hour, minute, seconds = time.split(":")
     AM_PM = "AM" if int(hour) < 12 else "PM"
